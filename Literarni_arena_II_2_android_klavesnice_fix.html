@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Literární aréna II/2</title>
+<style>
+:root{
+  --bg:#140807;--panel:#2b130e;--panel2:#421d14;--gold:#ffd36a;--gold2:#ffb02e;--text:#fff7df;--muted:#e8cfaa;
+  --ok:#78f0a0;--bad:#ff5252;--train:#70e0ff;--challenge:#b9ff83;--test:#ff9a9a;--mini:#d4a3ff;
+}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at top,#542014 0,#160806 45%,#050101 100%);color:var(--text);touch-action:manipulation;overscroll-behavior:none}
+body.mode-training{background:radial-gradient(circle at top,#10364a 0,#160806 52%,#030101 100%)}
+body.mode-mini{background:radial-gradient(circle at top,#35205b 0,#160806 52%,#030101 100%)}
+body.mode-challenge{background:radial-gradient(circle at top,#233f16 0,#160806 52%,#030101 100%)}
+body.mode-test{background:radial-gradient(circle at top,#5a1717 0,#160806 52%,#030101 100%)}
+.wrap{max-width:980px;margin:0 auto;padding:14px;min-height:100%;display:flex;flex-direction:column;gap:12px}
+.card{background:linear-gradient(180deg,rgba(61,27,18,.96),rgba(28,10,7,.96));border:1px solid rgba(255,211,106,.36);border-radius:22px;box-shadow:0 14px 36px rgba(0,0,0,.45);padding:16px}
+.card.training{border-color:rgba(112,224,255,.8);box-shadow:0 0 0 2px rgba(112,224,255,.14),0 14px 36px rgba(0,0,0,.45)}
+.card.mini{border-color:rgba(212,163,255,.86);box-shadow:0 0 0 2px rgba(212,163,255,.16),0 14px 36px rgba(0,0,0,.45)}
+.card.challenge{border-color:rgba(185,255,131,.86);box-shadow:0 0 0 2px rgba(185,255,131,.16),0 14px 36px rgba(0,0,0,.45)}
+.card.test{border-color:rgba(255,154,154,.9);box-shadow:0 0 0 2px rgba(255,154,154,.16),0 14px 36px rgba(0,0,0,.45)}
+.title{text-align:center;font-size:clamp(30px,6vw,62px);font-weight:1000;color:var(--gold);letter-spacing:.03em;text-shadow:0 2px 0 #5d260a,0 0 24px rgba(255,176,46,.36);margin:10px 0}
+.subtitle{text-align:center;color:var(--muted);font-size:clamp(15px,2.4vw,20px);margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.sectionList{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.trainCard{display:grid;grid-template-columns:1.2fr .8fr;gap:8px;align-items:stretch;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:10px}
+.btn{appearance:none;border:0;border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,#ffd36a,#b96617);color:#2b1206;font-weight:1000;font-size:17px;cursor:pointer;box-shadow:0 8px 0 #612507,0 10px 20px rgba(0,0,0,.35);user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btn:active{transform:translateY(4px);box-shadow:0 4px 0 #612507}.btn.secondary{background:linear-gradient(180deg,#f0d6a6,#9a6b2f);box-shadow:0 8px 0 #4c3215}.btn.trainingBtn{background:linear-gradient(180deg,#8cecff,#15738a);box-shadow:0 8px 0 #073646;color:#06212a}.btn.miniBtn{background:linear-gradient(180deg,#e2bbff,#7c38bd);box-shadow:0 8px 0 #37165d;color:#1c082e}.btn.challengeBtn{background:linear-gradient(180deg,#d0ff9e,#4d9a26);box-shadow:0 8px 0 #1d4a10;color:#082000}.btn.testBtn{background:linear-gradient(180deg,#ffb1a9,#c82e2e);box-shadow:0 8px 0 #661111;color:#fff}.btn.ghost{background:rgba(255,211,106,.12);color:var(--gold);border:1px solid rgba(255,211,106,.35);box-shadow:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center}.topbar{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;font-weight:1000;color:var(--gold);font-size:clamp(14px,2.5vw,20px)}.topbar>div:nth-child(2){font-size:clamp(20px,4.8vw,34px);color:#fff}.badge{display:inline-block;border-radius:999px;padding:5px 12px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.18)}
+.modeLine{text-align:center;color:var(--muted);font-weight:900}.promptType{text-align:center;font-weight:1000;font-size:clamp(16px,3vw,25px);margin:6px 0;color:var(--train)}.challenge .promptType{color:var(--challenge)}.test .promptType{color:var(--test)}.mini .promptType{color:var(--mini)}
+.clueBox{border:2px solid rgba(255,211,106,.55);border-radius:18px;padding:12px;background:rgba(0,0,0,.25);font-size:clamp(17px,3.8vw,29px);font-weight:1000;text-align:center;line-height:1.22}.clues{display:flex;flex-direction:column;gap:8px}.clue{padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.07)}
+.answerRow{display:flex;gap:10px;margin-top:12px}.input{flex:1;border:2px solid rgba(255,211,106,.45);border-radius:16px;padding:15px;font-size:22px;background:#fff8e8;color:#1a0804;font-weight:900;min-width:0}.feedback{text-align:center;font-size:clamp(18px,3.9vw,30px);font-weight:1000;min-height:46px;margin:6px}.ok{color:var(--ok)}.bad{color:var(--bad);text-shadow:0 0 16px rgba(255,0,0,.55)}.small{font-size:14px;color:var(--muted)}
+.correctAnswer{
+  display:inline-block;
+  margin-top:6px;
+  padding:8px 12px;
+  border-radius:14px;
+  background:rgba(255,211,106,.16);
+  border:1px solid rgba(255,211,106,.45);
+  color:#fff7df;
+  font-size:clamp(22px,5vw,40px);
+  font-weight:1000;
+  line-height:1.15;
+}
+.nameBox{display:flex;flex-direction:column;gap:10px;max-width:520px;margin:0 auto}.result{font-size:22px;line-height:1.5;text-align:center}.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden}.piece{position:absolute;width:10px;height:16px;background:var(--gold);animation:fall 1.8s linear forwards}@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.2}}
+.cheat{border-color:#ff2f2f;background:linear-gradient(180deg,rgba(92,8,8,.98),rgba(23,0,0,.98))}.cheat .title{color:#ffdddd;text-shadow:0 0 20px #ff0000}
+@media(max-width:700px){.wrap{padding:8px;gap:8px}.card{padding:12px;border-radius:16px}.grid,.sectionList{grid-template-columns:1fr}.trainCard{grid-template-columns:1fr}.answerRow{flex-direction:column}.btn{font-size:16px;padding:13px}.input{font-size:20px}.topbar{grid-template-columns:1fr;text-align:center}.topbar>div:nth-child(2){order:-1}.row .btn{flex:1 1 140px}.clueBox{padding:9px;font-size:clamp(16px,4.2vw,24px)}.feedback{font-size:clamp(17px,4vw,26px)}.correctAnswer{font-size:clamp(23px,6vw,34px)}.title{margin:2px 0 8px}.subtitle{margin-bottom:8px}}
+
+.mistakeMode .topbar,
+.mistakeMode .modeLine{
+  display:none !important;
+}
+.mistakeMode .input{
+  display:none !important;
+}
+.mistakeMode .answerRow{
+  justify-content:center;
+  margin-top:10px;
+}
+.mistakeMode .clueBox{
+  font-size:clamp(15px,3.1vw,23px);
+  padding:9px;
+  opacity:.82;
+}
+.nextAfterMistake{
+  margin-top:12px;
+  width:min(520px,100%);
+  font-size:clamp(20px,5vw,32px);
+  padding:16px 18px;
+}
+.correctAnswer{
+  display:inline-block;
+  margin-top:8px;
+  padding:10px 14px;
+  border-radius:16px;
+  background:rgba(255,211,106,.18);
+  border:1px solid rgba(255,211,106,.52);
+  color:#fff7df;
+  font-size:clamp(24px,6vw,44px);
+  font-weight:1000;
+  line-height:1.12;
+  max-width:100%;
+  overflow-wrap:anywhere;
+}
+@media(max-width:700px){
+  .mistakeMode .card{padding:10px}
+  .mistakeMode .clueBox{font-size:clamp(14px,3.8vw,21px);padding:8px}
+  .correctAnswer{font-size:clamp(25px,7vw,38px);padding:9px 11px}
+  .nextAfterMistake{font-size:clamp(19px,5.5vw,30px);padding:14px 16px}
+}
+
+
+/* Mobilně úsporný režim po chybě: zůstává původní tlačítko POTVRDIT. */
+.mistakeMode .topbar,
+.mistakeMode .modeLine{
+  display:none !important;
+}
+.mistakeMode .input{
+  display:none !important;
+}
+.mistakeMode .answerRow{
+  justify-content:center;
+  margin-top:10px;
+}
+.mistakeMode #submitBtn{
+  width:min(520px,100%);
+  font-size:clamp(20px,5vw,32px);
+  padding:16px 18px;
+}
+
+
+/* === Finální grafická úprava: pečetě, čas, status, větší indicie === */
+.topbar{display:grid!important;grid-template-columns:100px 1fr 100px!important;align-items:start!important;gap:10px!important;margin-bottom:4px!important}
+.modeSeal,.sectionSeal{width:96px!important;height:96px!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;font-weight:1000!important;line-height:1.02!important;padding:8px!important;white-space:pre-line!important;border:3px solid #ffce55!important;box-shadow:inset 0 0 18px rgba(255,255,255,.22),inset 0 -18px 28px rgba(0,0,0,.22),0 0 0 3px rgba(80,32,8,.9),0 7px 18px rgba(0,0,0,.48)!important}
+.modeSeal{font-size:19px!important;letter-spacing:.02em!important}
+.modeSeal.training{background:linear-gradient(180deg,#8cecff 0%,#15738a 72%,#083947 100%)!important;color:#06212a!important}
+.modeSeal.mini{background:linear-gradient(180deg,#e2bbff 0%,#7c38bd 72%,#37165d 100%)!important;color:#1c082e!important}
+.modeSeal.challenge{background:linear-gradient(180deg,#d0ff9e 0%,#4d9a26 72%,#1e4a10 100%)!important;color:#081f00!important}
+.modeSeal.test{background:linear-gradient(180deg,#ffb1a9 0%,#d83333 72%,#7b1212 100%)!important;color:#fff!important}
+.sectionSeal{background:linear-gradient(180deg,#d9912e 0%,#8c4c12 70%,#4e2307 100%)!important;color:#fff!important;font-size:18px!important;letter-spacing:.01em!important}
+.timeCenter{text-align:center!important;font-size:clamp(42px,6.5vw,74px)!important;line-height:.95!important;font-weight:1000!important;color:#fff!important;text-shadow:0 3px 0 rgba(0,0,0,.55),0 0 16px rgba(255,255,255,.35)!important}
+.timeCenter .statusMini{display:block!important;width:min(520px,88%)!important;margin:8px auto 0!important;padding:7px 14px!important;border-radius:999px!important;border:1px solid rgba(255,211,106,.7)!important;background:rgba(0,0,0,.28)!important;font-size:clamp(20px,3.2vw,31px)!important;line-height:1.1!important;font-weight:1000!important;color:#7cff26!important;text-shadow:0 0 10px rgba(124,255,38,.35)!important}
+.timeCenter .statusMini .score{color:#20e6ff!important;text-shadow:0 0 10px rgba(32,230,255,.35)!important}
+.timeCenter .statusMini .dot{color:#ffd36a!important;padding:0 .35em!important}
+.modeLine{display:none!important}.badge{display:none!important}
+.promptType{color:#ff9db3!important;font-size:clamp(24px,4.4vw,48px)!important;line-height:1.08!important;margin:8px 0 12px!important;text-shadow:0 2px 0 rgba(0,0,0,.55),0 0 12px rgba(255,157,179,.24)!important}
+.clueBox{font-size:clamp(27px,5vw,56px)!important;padding:16px!important;line-height:1.12!important;border-color:rgba(255,190,35,.86)!important}
+.clues{gap:10px!important}.clue{padding:10px 12px!important;border-radius:16px!important;background:rgba(255,255,255,.065)!important}
+.answerRow{display:grid!important;grid-template-columns:1fr 74px!important;gap:0!important;margin-top:12px!important}
+.answerRow .input{border-radius:18px 0 0 18px!important;border-right:0!important;font-size:clamp(22px,3.2vw,34px)!important;padding:15px 16px!important}
+.answerRow #submitBtn{border-radius:0 18px 18px 0!important;min-width:74px!important;width:74px!important;padding:8px!important;font-size:36px!important;box-shadow:0 7px 0 #612507,0 9px 16px rgba(0,0,0,.32)!important}
+.mistakeMode .answerRow{display:flex!important;justify-content:center!important}
+.mistakeMode .answerRow #submitBtn{border-radius:16px!important;width:min(520px,100%)!important;min-width:0!important;font-size:clamp(20px,5vw,32px)!important;padding:16px 18px!important}
+@media(max-width:700px){
+.wrap{padding:6px!important;gap:6px!important}.card{padding:8px!important;border-radius:15px!important}
+.topbar{grid-template-columns:78px 1fr 78px!important;gap:4px!important;align-items:start!important}
+.modeSeal,.sectionSeal{width:74px!important;height:74px!important;padding:5px!important;border-width:2px!important}
+.modeSeal{font-size:15px!important}.sectionSeal{font-size:13px!important}
+.timeCenter{font-size:clamp(34px,10vw,58px)!important}
+.timeCenter .statusMini{width:96%!important;margin-top:5px!important;padding:5px 8px!important;font-size:clamp(17px,4.7vw,24px)!important}
+.promptType{font-size:clamp(22px,6vw,34px)!important;margin:6px 0 9px!important}
+.clueBox{font-size:clamp(25px,7.2vw,39px)!important;padding:10px!important;line-height:1.1!important}
+.clues{gap:8px!important}.clue{padding:8px 8px!important}
+.answerRow{grid-template-columns:1fr 64px!important;margin-top:9px!important}
+.answerRow .input{font-size:clamp(20px,5.3vw,28px)!important;padding:13px 11px!important}
+.answerRow #submitBtn{width:64px!important;min-width:64px!important;font-size:32px!important}
+.row{gap:6px!important}.row .btn{font-size:14px!important;padding:10px 8px!important}
+}
+
+
+/* === Doladění po reálném testu: čas, pečetě, mírně menší indicie === */
+.topbar{
+  grid-template-columns:112px 1fr 112px !important;
+  align-items:start !important;
+}
+.modeSeal,.sectionSeal{
+  width:104px !important;
+  height:104px !important;
+  min-width:104px !important;
+  min-height:104px !important;
+  max-width:104px !important;
+  max-height:104px !important;
+}
+.modeSeal{
+  font-size:22px !important;
+}
+.sectionSeal{
+  font-size:20px !important;
+  background:linear-gradient(180deg,#e4a13a 0%,#9a5618 68%,#542707 100%) !important;
+  color:#fff !important;
+}
+.timeCenter{
+  font-size:clamp(46px,7vw,78px) !important;
+  min-height:78px !important;
+}
+.timeCenter #time{
+  display:block !important;
+}
+.clueBox{
+  font-size:clamp(24px,4.4vw,48px) !important;
+  padding:14px !important;
+  line-height:1.12 !important;
+}
+.clues{
+  gap:9px !important;
+}
+.clue{
+  padding:9px 11px !important;
+}
+@media(max-width:700px){
+  .topbar{
+    grid-template-columns:84px 1fr 84px !important;
+    gap:5px !important;
+  }
+  .modeSeal,.sectionSeal{
+    width:80px !important;
+    height:80px !important;
+    min-width:80px !important;
+    min-height:80px !important;
+    max-width:80px !important;
+    max-height:80px !important;
+  }
+  .modeSeal{
+    font-size:17px !important;
+  }
+  .sectionSeal{
+    font-size:14px !important;
+  }
+  .timeCenter{
+    font-size:clamp(36px,10vw,58px) !important;
+    min-height:64px !important;
+  }
+  .timeCenter .statusMini{
+    font-size:clamp(16px,4.5vw,22px) !important;
+  }
+  .clueBox{
+    font-size:clamp(23px,6.5vw,35px) !important;
+    padding:9px !important;
+  }
+}
+
+
+/* === Finální mobilní rozvržení podle schváleného návrhu s klávesnicí === */
+@media(max-width:700px){
+  .wrap{padding:4px!important;gap:4px!important;min-height:100dvh!important}
+  .card{padding:6px 7px 7px!important;border-radius:14px!important}
+
+  .topbar{
+    display:grid!important;
+    grid-template-columns:72px 1fr 72px!important;
+    grid-template-rows:auto auto!important;
+    column-gap:4px!important;
+    row-gap:0!important;
+    align-items:start!important;
+    margin:0 0 2px!important;
+  }
+  .modeSeal{grid-column:1!important;grid-row:1 / span 2!important;justify-self:start!important}
+  .sectionSeal{grid-column:3!important;grid-row:1 / span 2!important;justify-self:end!important}
+  .modeSeal,.sectionSeal{
+    width:68px!important;height:68px!important;min-width:68px!important;min-height:68px!important;
+    max-width:68px!important;max-height:68px!important;padding:4px!important;border-width:2px!important;
+  }
+  .modeSeal{font-size:15px!important}
+  .sectionSeal{
+    font-size:13px!important;
+    background:linear-gradient(180deg,#e4a13a 0%,#9a5618 68%,#542707 100%)!important;
+    color:#fff!important;
+  }
+  .timeCenter{
+    grid-column:2!important;grid-row:1 / span 2!important;align-self:start!important;
+    font-size:clamp(32px,9vw,48px)!important;line-height:.9!important;
+    min-height:auto!important;padding-top:0!important;
+  }
+  .timeCenter #time{display:block!important;margin:0!important}
+  .timeCenter .statusMini{
+    display:block!important;width:100%!important;margin:5px auto 0!important;padding:3px 5px!important;
+    border-radius:999px!important;font-size:clamp(15px,4.3vw,21px)!important;
+    line-height:1.05!important;white-space:nowrap!important;
+  }
+
+  .promptType{
+    font-size:clamp(22px,6vw,32px)!important;
+    line-height:1.08!important;
+    margin:6px 0 7px!important;
+  }
+
+  .clueBox{
+    font-size:clamp(25px,7.1vw,38px)!important;
+    padding:7px!important;
+    line-height:1.06!important;
+    border-radius:16px!important;
+  }
+  .clues{gap:4px!important}
+  .clue{
+    padding:6px 7px!important;
+    border-radius:13px!important;
+    line-height:1.05!important;
+  }
+
+  .answerRow{
+    display:grid!important;
+    grid-template-columns:1fr 62px!important;
+    gap:0!important;
+    margin-top:6px!important;
+  }
+  .answerRow .input{
+    font-size:clamp(20px,5.3vw,28px)!important;
+    padding:11px 10px!important;
+    border-radius:16px 0 0 16px!important;
+    border-right:0!important;
+    min-height:52px!important;
+  }
+  .answerRow #submitBtn{
+    width:62px!important;
+    min-width:62px!important;
+    font-size:31px!important;
+    padding:7px!important;
+    border-radius:0 16px 16px 0!important;
+  }
+
+  .row{gap:5px!important;margin-top:4px!important}
+  .row .btn{font-size:13px!important;padding:8px 7px!important}
+  .feedback{min-height:32px!important;margin:3px!important}
+
+  .mistakeMode .clueBox{
+    font-size:clamp(18px,5vw,27px)!important;
+    padding:6px!important;
+  }
+  .mistakeMode .answerRow{
+    display:flex!important;
+    justify-content:center!important;
+    margin-top:6px!important;
+  }
+  .mistakeMode .answerRow #submitBtn{
+    border-radius:16px!important;
+    width:min(520px,100%)!important;
+    min-width:0!important;
+    font-size:clamp(19px,5vw,30px)!important;
+    padding:13px 16px!important;
+  }
+}
+
+
+/* === Android fix: pevné zóny v horním panelu + viditelné odpovědní pole === */
+@media(max-width:700px){
+  .wrap{
+    padding:4px !important;
+    gap:4px !important;
+    min-height:100dvh !important;
+  }
+  .card{
+    position:relative !important;
+    padding:6px 7px 7px !important;
+    border-radius:14px !important;
+  }
+
+  .topbar{
+    position:relative !important;
+    display:block !important;
+    height:112px !important;
+    margin:0 0 4px !important;
+  }
+  .modeSeal,.sectionSeal{
+    position:absolute !important;
+    top:0 !important;
+    width:68px !important;
+    height:68px !important;
+    min-width:68px !important;
+    min-height:68px !important;
+    max-width:68px !important;
+    max-height:68px !important;
+    padding:4px !important;
+    border-width:2px !important;
+    z-index:2 !important;
+  }
+  .modeSeal{
+    left:0 !important;
+    font-size:15px !important;
+  }
+  .sectionSeal{
+    right:0 !important;
+    font-size:13px !important;
+    background:linear-gradient(180deg,#e4a13a 0%,#9a5618 68%,#542707 100%) !important;
+    color:#fff !important;
+  }
+  .timeCenter{
+    position:absolute !important;
+    top:0 !important;
+    left:50% !important;
+    transform:translateX(-50%) !important;
+    width:calc(100% - 148px) !important;
+    min-height:0 !important;
+    padding:0 !important;
+    margin:0 !important;
+    text-align:center !important;
+    font-size:clamp(34px,9.2vw,50px) !important;
+    line-height:.9 !important;
+    z-index:1 !important;
+  }
+  .timeCenter #time{
+    display:block !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+  .timeCenter .statusMini{
+    display:block !important;
+    width:100% !important;
+    margin:5px auto 0 !important;
+    padding:3px 4px !important;
+    border-radius:999px !important;
+    font-size:clamp(14px,4vw,20px) !important;
+    line-height:1.05 !important;
+    white-space:normal !important;
+  }
+
+  .promptType{
+    font-size:clamp(21px,5.6vw,31px) !important;
+    line-height:1.05 !important;
+    margin:4px 0 6px !important;
+  }
+
+  .clueBox{
+    font-size:clamp(23px,6.3vw,35px) !important;
+    padding:6px !important;
+    line-height:1.04 !important;
+    border-radius:16px !important;
+  }
+  .clues{
+    gap:3px !important;
+  }
+  .clue{
+    padding:5px 7px !important;
+    border-radius:12px !important;
+    line-height:1.04 !important;
+  }
+
+  .answerRow{
+    display:grid !important;
+    grid-template-columns:1fr 62px !important;
+    gap:0 !important;
+    margin-top:5px !important;
+  }
+  .answerRow .input{
+    font-size:clamp(20px,5.2vw,27px) !important;
+    padding:10px 10px !important;
+    min-height:50px !important;
+    border-radius:16px 0 0 16px !important;
+    border-right:0 !important;
+  }
+  .answerRow #submitBtn{
+    width:62px !important;
+    min-width:62px !important;
+    font-size:30px !important;
+    padding:7px !important;
+    border-radius:0 16px 16px 0 !important;
+  }
+
+  .feedback{
+    min-height:28px !important;
+    margin:2px !important;
+  }
+  .row{
+    gap:5px !important;
+    margin-top:3px !important;
+  }
+  .row .btn{
+    font-size:13px !important;
+    padding:8px 7px !important;
+  }
+
+  body.keyboardOpen .row{
+    display:none !important;
+  }
+  body.keyboardOpen .topbar{
+    height:104px !important;
+  }
+  body.keyboardOpen .modeSeal,
+  body.keyboardOpen .sectionSeal{
+    width:64px !important;
+    height:64px !important;
+    min-width:64px !important;
+    min-height:64px !important;
+    max-width:64px !important;
+    max-height:64px !important;
+  }
+  body.keyboardOpen .timeCenter{
+    width:calc(100% - 140px) !important;
+    font-size:clamp(32px,8.7vw,46px) !important;
+  }
+  body.keyboardOpen .promptType{
+    margin:3px 0 5px !important;
+    font-size:clamp(20px,5.4vw,30px) !important;
+  }
+  body.keyboardOpen .clueBox{
+    font-size:clamp(22px,6vw,34px) !important;
+    padding:5px !important;
+  }
+  body.keyboardOpen .clues{
+    gap:2px !important;
+  }
+  body.keyboardOpen .clue{
+    padding:4px 6px !important;
+  }
+  body.keyboardOpen .answerRow{
+    margin-top:4px !important;
+  }
+
+  .mistakeMode .topbar{
+    display:none !important;
+  }
+  .mistakeMode .answerRow{
+    display:flex !important;
+    justify-content:center !important;
+  }
+  .mistakeMode .answerRow #submitBtn{
+    border-radius:16px !important;
+    width:min(520px,100%) !important;
+    min-width:0 !important;
+    font-size:clamp(19px,5vw,30px) !important;
+    padding:13px 16px !important;
+  }
+}
+
+</style>
+
+<style>
+.results-btn{
+  margin: .45rem;
+  padding: .7rem 1rem;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app"></div><div class="confetti" id="confetti"></div>
+<script>
+const SHEET_ID = "1pkj1ISkzdtgNphGLGwakezT1WzHJxz-pv2OLnCmfnLk";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx8m65eDx9xCOJQLatGjux-_7VuZJH65PmVLLGEgEd-mpw4bl_GKR4fxvpq92Rq_9Jb/exec";
+const RESULTS_SHEET_URL = "https://docs.google.com/spreadsheets/d/1pkj1ISkzdtgNphGLGwakezT1WzHJxz-pv2OLnCmfnLk/edit?usp=sharing";
+const DATA = [{"key":"dila","title":"I. LITERÁRNÍ DÍLO","prompt":"Doplň název literárního díla","items":[{"answers":["Oliver Twist"],"clues":["londýnské podsvětí","dětský sirotek","kapsářská parta","útěk za lepším životem"]},{"answers":["David Copperfield"],"clues":["těžké dětství","práce v továrně","vzpomínky na vlastní život","cesta za vzděláním"]},{"answers":["Kronika Pickwickova klubu"],"clues":["skupina podivínských cestovatelů","komické příhody na cestách","anglický venkov","satira společnosti"]},{"answers":["Jana Eyrová","Jane Eyrová","Jane Eyre"],"clues":["internátní škola","tajemství na venkovském sídle","požár","hledání osobní svobody"]},{"answers":["Paní Bovaryová","Madame Bovary"],"clues":["nespokojenost s manželstvím","dluhy","milostná zklamání","touha po lepším životě"]},{"answers":["Kulička"],"clues":["cesta dostavníkem","válka","pokrytectví společnosti","oběť pro ostatní"]},{"answers":["Zabiják"],"clues":["pařížská chudina","alkoholismus","postupný životní úpadek","prostředí dělníků"]},{"answers":["Revizor"],"clues":["očekávání významného hosta","panika úředníků","úplatky","omyl"]},{"answers":["Mrtvé duše"],"clues":["obchodování s neexistujícími lidmi","cestování po statcích","podvody","kritika společnosti"]},{"answers":["Zločin a trest"],"clues":["vražda sekyrou","výčitky svědomí","chudoba","hledání vykoupení"]},{"answers":["Quo vadis"],"clues":["starověký Řím","pronásledování křesťanů","císařské slavnosti","šelmy v arénách"]},{"answers":["Dobrodružství Toma Sawyera a Huckleberryho Finna","Dobrodružství Toma Sawyera","Dobrodružství Huckleberryho Finna"],"clues":["zlatá horečka","rasové problémy","klukovské lumpárny","plavba po řece"]},{"answers":["Povídky malostranské"],"clues":["pražská čtvrť","obyčejní lidé","sousedské vztahy","každodenní život"]},{"answers":["Večerní písně"],"clues":["láska","příroda","optimismus","mládí"]},{"answers":["Písně kosmické"],"clues":["astronomické motivy","věda","lidstvo","pokrok"]},{"answers":["Hřbitovní kvítí"],"clues":["pesimistické a neuhlazené verše","sociální kritika","motiv květin","mladistvá skepse"]},{"answers":["Kříž u potoka"],"clues":["rodová kletba","venkov","osudová láska","vina minulosti"]},{"answers":["Černý Petříček"],"clues":["knoflíkář","sociální problémy","pražské prostředí","práce s pověrčivostí"]},{"answers":["Hubička"],"clues":["čekání na svatební okamžik","venkov","nedorozumění","libreto"]},{"answers":["Svatý Xaverius"],"clues":["tajemná malba","ukrytý poklad","posedlost","náboženský motiv"]},{"answers":["Newtonův mozek"],"clues":["cesta časem","vědecký objev","fantazie","technický pokrok"]},{"answers":["Pravý výlet pana Broučka do Měsíce"],"clues":["cesta na vesmírné těleso","měšťák","satira","hospoda"]},{"answers":["Nový epochální výlet pana Broučka, tentokráte do XV. století"],"clues":["husitská Praha","zbabělost","cesta časem","vlastenectví"]},{"answers":["Noc na Karlštejně"],"clues":["královský hrad","zákaz vstupu žen","převleky","milostné zápletky"]},{"answers":["Staré pověsti české"],"clues":["dávná minulost","bájní hrdinové","vznik českého národa","legendární příběhy"]},{"answers":["Psohlavci"],"clues":["Chodsko","boj za práva","odpor proti vrchnosti","poprava vůdce"]},{"answers":["F. L. Věk","F L Věk","F.L. Věk"],"clues":["období národního obrození","knihkupec","kulturní život","české vlastenectví"]},{"answers":["Kalibův zločin"],"clues":["motyka","psychický nátlak","opětovná svatba vdovce","osudová chyba"]},{"answers":["Naši furianti"],"clues":["spor o obecní funkci","vesnická ješitnost","hospoda","volební konflikt"]},{"answers":["Maryša"],"clues":["vnucený sňatek","jed v kávě","tlak rodiny","tragický konec"]},{"answers":["Její pastorkyňa"],"clues":["dítě ukryté před světem","vina a výčitky","moravská vesnice","rodinné drama"]},{"answers":["Kuře melancholik"],"clues":["citlivý chlapec","nepochopení okolím","přátelství se zvířetem","venkovské prostředí"]},{"answers":["Květy zla","Zdechlina","Mršina","Mrcha"],"clues":["hniloba a pluky larev","krása v ošklivosti","dekadentní atmosféra","provokace společnosti"]},{"answers":["Saturnské básně"],"clues":["melancholie","hudebnost verše","smutek","intimní prožitky"]},{"answers":["Iluminace"],"clues":["snové obrazy","volné asociace","synestézie","neobvyklé představy"]},{"answers":["Obraz Doriana Graye"],"clues":["portrét","nestárnoucí tvář","dvojí život","morální úpadek"]},{"answers":["Strašidlo cantervillské"],"clues":["duch na zámku","anglické sídlo","americká rodina","humor"]},{"answers":["Slavík a růže","Šťastný princ a jiné pohádky"],"clues":["obětovaná láska","rudá květina","nepochopení citu","smutný konec"]}]},{"key":"autori","title":"II. AUTOŘI","prompt":"Doplň autora","items":[{"answers":["Jan Neruda","Neruda"],"clues":["pražská Malá Strana","novinářská činnost","fejetony","celoživotní vztah k rodnému městu"]},{"answers":["Karolina Světlá","Světlá"],"clues":["pseudonym podle severočeské obce","Podještědí","silné ženské hrdinky","venkovské prostředí"]},{"answers":["Vítězslav Hálek","Hálek"],"clues":["optimistický pohled na svět","přátelství s Janem Nerudou","přírodní lyrika","velmi oblíbený za života"]},{"answers":["Jakub Arbes","Arbes"],"clues":["novinář","politické pronásledování","tvůrce romaneta","technické a vědecké motivy"]},{"answers":["Eliška Krásnohorská","Krásnohorská"],"clues":["boj za vzdělávání žen","libreta","spolupráce s významným českým skladatelem","ženská emancipace"]},{"answers":["Svatopluk Čech","Čech"],"clues":["satirický pohled na českou společnost","cestování v čase a prostoru","vlastenecké postoje","humor"]},{"answers":["Jaroslav Vrchlický","Vrchlický"],"clues":["učitel komparatistiky na UK","překladatel světové literatury","kosmopolitní zaměření","jeden z nejplodnějších českých básníků"]},{"answers":["Josef Václav Sládek","Sládek"],"clues":["pobyt v Americe","práce na železnici","inspirace angloamerickou literaturou","překladatel Shakespeara"]},{"answers":["Charles Dickens","Dickens"],"clues":["dětství v chudobě","práce v továrně na leštidla","kritika sociálních poměrů","osudy dětí"]},{"answers":["Charlotte Brontëová","Brontëová"],"clues":["anglický venkov","vychovatelka","sestra známých spisovatelek","ženské hrdinky"]},{"answers":["Gustave Flaubert","Flaubert"],"clues":["usiloval o dokonalý styl","dlouhá práce na každé větě","kritika maloměšťáctví","Francie"]},{"answers":["Guy de Maupassant","Maupassant"],"clues":["mistr krátkého prozaického útvaru","francouzsko-pruská válka","ironické pointy","realistické zachycení života"]},{"answers":["Émile Zola","Emile Zola","Zola"],"clues":["dědičnost a prostředí","naturalismus","vědecký přístup k literatuře","francouzská společnost"]},{"answers":["Nikolaj Vasiljevič Gogol","Gogol"],"clues":["satira úřednického světa","groteskní humor","carské Rusko","kritika korupce"]},{"answers":["Fjodor Michajlovič Dostojevskij","Dostojevskij"],"clues":["psychologická hloubka","pobyt na Sibiři","vina a svědomí","filozofické otázky"]},{"answers":["Henryk Sienkiewicz","Sienkiewicz"],"clues":["historické náměty","Nobelova cena","starověké prostředí","polská literatura"]},{"answers":["Mark Twain","Twain"],"clues":["Mississippi","humor","kritika rasismu","dobrodružství dospívajících chlapců"]},{"answers":["Alois Jirásek","Jirásek"],"clues":["hronovský rodák","učitel v Litomyšli","Manifest českých spisovatelů za vznik ČSR","téma národní historie"]},{"answers":["Karel Václav Rais","Rais"],"clues":["venkovské realistické prostředí","učitelská tematika","Podkrkonoší","zachycení života výminkářů"]},{"answers":["Ladislav Stroupežnický","Stroupežnický"],"clues":["venkovské jihočeské prostředí","humor","obecní spory","divadlo"]},{"answers":["Gabriela Preissová","Preissová"],"clues":["moravské prostředí","ženské osudy","realistické drama","lidové prostředí"]},{"answers":["Alois Mrštík","Vilém Mrštík","Mrštíkové","Alois a Vilém Mrštíkové","bratři Mrštíkové"],"clues":["moravský venkov","spolupráce bratrů","realistická próza a drama","psychologické konflikty"]},{"answers":["Josef Karel Šlejhar","Šlejhar"],"clues":["naturalistické prvky","drsné venkovské prostředí","zvířata jako důležitý motiv","pesimistické ladění"]},{"answers":["Charles Baudelaire","Baudelaire"],"clues":["francouzský dekadent a symbolista","krása v ošklivosti","popis rozkladu uhynulého zvířete","moderní velkoměsto"]},{"answers":["Paul Verlaine","Verlaine"],"clues":["hudebnost poezie","zrod prokletých básníků","postřelil svého partnera","obrat ke křesťanství ve vězení"]},{"answers":["Arthur Rimbaud","Rimbaud"],"clues":["literární génius mládí","cestoval po světě a překupník se zbraněmi","postřelen od partnera","přestal velmi brzy psát"]},{"answers":["Oscar Wilde","Wilde"],"clues":["dandy","estetismus","otec slavným očním a ušním lékařem u královny","vězení"]}]},{"key":"postavy","title":"III. LITERÁRNÍ POSTAVY","prompt":"Doplň literární postavu","items":[{"answers":["Vojtíšek"],"clues":["chudý člověk, který zmrzne","pražské prostředí","bezcitnost okolí"]},{"answers":["Eva"],"clues":["rodová vina","snaha zlomit kletbu","venkovské prostředí"]},{"answers":["Hvězdomír Blankytný"],"clues":["vesmírné těleso","průvodce hlavní postavy","idealistická filozofie"]},{"answers":["Janek od Zvonu","Domšík"],"clues":["husitská Praha","průvodce","kontrast ke zbabělosti"]},{"answers":["Fagin"],"clues":["londýnské podsvětí","kapsářská parta","židovský původ"]},{"answers":["Ferina Lišák","Ferina","Lišák","John Dawkins"],"clues":["londýnské podsvětí","kapsářská parta","dětský zloděj"]},{"answers":["Nancy"],"clues":["londýnské podsvětí","soucit s dítětem","tragická oběť zločineckého prostředí"]},{"answers":["Bill Sikes","Bill","Sikes"],"clues":["londýnské podsvětí","násilnická povaha","brutální zločin"]},{"answers":["Oliver","Oliver Twist"],"clues":["londýnské podsvětí","sirotek","útěk za lepším životem"]},{"answers":["Rochester"],"clues":["pán venkovského sídla","tajemství","požár"]},{"answers":["Jana","Jana Eyrová","Jane"],"clues":["internátní škola","hledání osobní svobody","vychovatelka"]},{"answers":["Kulička"],"clues":["dostavník","válka","oběť psychického teroru"]},{"answers":["Gervaisa"],"clues":["žena z pařížské chudiny","alkoholismus","životní úpadek"]},{"answers":["Nana"],"clues":["prostituce","pařížské prostředí","společenský vzestup i pád"]},{"answers":["Ema","Ema Bovaryová","Bovaryová"],"clues":["nespokojenost s manželstvím","dluhy","romantické iluze"]},{"answers":["Karel Bovary","Karel","Charles","Charles Bovary"],"clues":["venkovský lékař","manžel hlavní hrdinky","důvěřivost"]},{"answers":["Chlestakov"],"clues":["omyl a záměna osoby","úplatky","využití paniky úředníků"]},{"answers":["Špekin","poštmistr","poštmistr Špekin"],"clues":["korupce","úředník","čtení cizích dopisů"]},{"answers":["Čičikov"],"clues":["podvodné obchody","cesta po statcích","neexistující lidé"]},{"answers":["Raskolnikov"],"clues":["vražda sekyrou","teorie výjimečného člověka","výčitky svědomí"]},{"answers":["Soňa","Soňa Marmeladovová"],"clues":["prostituce","zpověď o hloubce víry","vedení hlavní postavy k přiznání a přijetí milosti"]},{"answers":["Vinicius","Marcus Vinicius"],"clues":["starověký Řím","pronásledování křesťanů","proměna vztahu k víře"]},{"answers":["Lygie","Ligie"],"clues":["barbarka pronásledovaná kvůli víře v Krista","starověký Řím","milostný vztah"]},{"answers":["Nero","Nero Claudius Caesar"],"clues":["starověký Řím","císařská moc","krutost"]},{"answers":["Petronius"],"clues":["rádce císaře","vytříbený vkus","starověký Řím"]},{"answers":["Tom Sawyer","Huckleberry Finn","Huck Finn","Huckleberry"],"clues":["klukovské lumpárny","dobrodružství u řeky","svobodomyslný chlapec"]},{"answers":["Pan Pickwick","Pickwick"],"clues":["cestování po Anglii","komické příhody","dobrosrdečný podivín"]},{"answers":["Pan Brouček","Brouček"],"clues":["hospoda","zbabělost","cesta mimo běžný svět"]},{"answers":["Maryša"],"clues":["vnucený sňatek","jed v kávě","tlak rodiny"]},{"answers":["Vávra"],"clues":["násilí vůči manželce","jed v kávě","tragický konec"]},{"answers":["Vojta","Vojta Kaliba","Kaliba"],"clues":["vdovec","opětovná svatba","motyka"]},{"answers":["Jan Sladký Kozina","Jan Sladký","Kozina"],"clues":["Chodsko","odpor proti vrchnosti","poprava"]},{"answers":["Laminger","Lomikar"],"clues":["chodský feudál","kletba","infarkt"]},{"answers":["F. L. Věk","František Ladislav Věk","Věk"],"clues":["knihkupec","národní obrození","české vlastenectví"]},{"answers":["Horymír"],"clues":["dávná minulost","legendární příběh","záchrana skokem"]},{"answers":["Francek","Franek"],"clues":["nenaplněná láska","vojenská služba","návrat do rodné vesnice"]},{"answers":["Kostelnička","Buryjovka"],"clues":["dítě ukryté před světem","vraždou očistit pověst druhého","moravská vesnice"]},{"answers":["Jenůfa","Jenůfka"],"clues":["dívka s pořezaným obličejem","moravská vesnice","utajované dítě"]},{"answers":["Laca"],"clues":["pořezaný obličej","žárlivost","moravská vesnice"]},{"answers":["Števa"],"clues":["lehkomyslnost","otec utajovaného dítěte","moravská vesnice"]},{"answers":["Vendulka"],"clues":["čekání na svatební okamžik","venkov","odmítnutí intimity před svatbou"]},{"answers":["Lukáš"],"clues":["venkovské prostředí","touha vdovce po intimitě","tvrdohlavost a symbolický svatební den"]},{"answers":["Lojzík"],"clues":["citlivý chlapec","přátelství se zvířetem","venkovské prostředí"]},{"answers":["Basil Hallward","Basil"],"clues":["malíř","věčné mládí","úpadek"]},{"answers":["Dorian Gray","Dorian"],"clues":["portrét","touha po věčném mládí","mravní úpadek"]},{"answers":["Lord Henry","Henry"],"clues":["svádění k požitkářství","cynické výroky","věčné mládí"]},{"answers":["Otis","pan Otis","Lord Otis"],"clues":["anglické sídlo se strašidlem","vyhrocený racionalismus a cynismus","přistěhovalec"]}]},{"key":"pojmy","title":"IV. LITERÁRNÍ POJMY","prompt":"Doplň literární pojem","items":[{"answers":["bovarismus"],"clues":["životní postoj založený na nespokojenosti s vlastní realitou a útěku do vysněného světa"]},{"answers":["samoděržaví"],"clues":["neomezená vláda ruského panovníka"]},{"answers":["drobnokresba"],"clues":["detailní zachycení každodenního života obyčejných lidí"]},{"answers":["typizace postav"],"clues":["vytváření postav jako představitelů určité společenské skupiny"]},{"answers":["libreto"],"clues":["textová složka opery"]},{"answers":["román"],"clues":["rozsáhlé epické prozaické dílo"]},{"answers":["romaneto"],"clues":["kratší próza s tajemstvím a překvapivým racionálním vysvětlením"]},{"answers":["fejeton"],"clues":["publicistický útvar reagující na aktuální dění s humorem či nadsázkou"]},{"answers":["aliterace"],"clues":["opakování stejných hlásek na začátku slov"]},{"answers":["synestézie"],"clues":["spojování vjemů různých smyslů"]},{"answers":["korupce","zkorumpovanost"],"clues":["zneužití veřejné funkce pro osobní prospěch, úplatkářství"]},{"answers":["biografie","životopis"],"clues":["životopis významné osobnosti"]},{"answers":["kosmopolitismus"],"clues":["orientace na světovou kulturu a překračování národních hranic"]},{"answers":["estetismus"],"clues":["důraz na krásu jako nejvyšší životní a uměleckou hodnotu"]},{"answers":["impresionismus"],"clues":["zachycení okamžitého dojmu či nálady"]},{"answers":["satira"],"clues":["zesměšnění společenských nedostatků"]},{"answers":["groteska"],"clues":["spojení směšného a děsivého"]},{"answers":["pointa"],"clues":["překvapivé vyústění textu"]},{"answers":["kontrast"],"clues":["postavení dvou protikladů vedle sebe"]},{"answers":["motiv"],"clues":["nejmenší významová složka literárního díla"]},{"answers":["téma"],"clues":["hlavní obsahová oblast díla"]},{"answers":["psychologizace"],"clues":["důraz na vnitřní prožívání postav"]},{"answers":["individualismus"],"clues":["důraz na jedinečnost jednotlivce"]},{"answers":["emancipace"],"clues":["získávání rovných práv a postavení"]},{"answers":["feminismus"],"clues":["hnutí usilující o rovnoprávnost žen"]},{"answers":["sociální román"],"clues":["román zaměřený na sociální problémy společnosti"]},{"answers":["historický román"],"clues":["román zasazený do minulosti a pracující s historickými událostmi"]},{"answers":["ironie"],"clues":["vyjádření, při němž je skutečný význam opačný než význam doslovný"]},{"answers":["charakteristika"],"clues":["popis vnějších i vnitřních vlastností osoby"]},{"answers":["pseudonym"],"clues":["umělecké jméno autora"]}]},{"key":"forma","title":"V. FORMA / DRUH / ŽÁNR","prompt":"Doplň literární formu, druh, žánr nebo žánrovou variantu","items":[{"type":"literární formu","answers":["próza"],"clues":["londýnské podsvětí, sirotek, kapsářská parta"]},{"type":"literární formu","answers":["próza"],"clues":["internátní škola, tajemství na venkovském sídle"]},{"type":"literární formu","answers":["próza"],"clues":["vražda sekyrou, výčitky svědomí"]},{"type":"literární formu","answers":["próza"],"clues":["starověký Řím, pronásledování křesťanů"]},{"type":"literární formu","answers":["próza"],"clues":["Chodsko, odpor proti vrchnosti"]},{"type":"literární formu","answers":["drama"],"clues":["jed v kávě, vnucený sňatek"]},{"type":"literární formu","answers":["drama"],"clues":["dítě ukryté před světem, moravská vesnice"]},{"type":"literární formu","answers":["poezie"],"clues":["pesimistické a neuhlazené verše, motiv květin"]},{"type":"literární druh","answers":["drama"],"clues":["jed v kávě, vnucený sňatek"]},{"type":"literární druh","answers":["drama"],"clues":["dítě ukryté před světem"]},{"type":"literární druh","answers":["drama"],"clues":["zákaz vstupu žen na hrad"]},{"type":"literární druh","answers":["epika"],"clues":["vražda sekyrou a výčitky svědomí"]},{"type":"literární druh","answers":["epika"],"clues":["londýnské podsvětí a sirotek"]},{"type":"literární druh","answers":["epika"],"clues":["starověký Řím a křesťané"]},{"type":"literární druh","answers":["lyrika"],"clues":["pesimistické a neuhlazené verše"]},{"type":"literární žánr","answers":["román"],"clues":["londýnské podsvětí, sirotek"]},{"type":"literární žánr","answers":["román"],"clues":["nespokojenost s manželstvím, dluhy"]},{"type":"literární žánr","answers":["román"],"clues":["vražda sekyrou, výčitky svědomí"]},{"type":"literární žánr","answers":["román"],"clues":["starověký Řím, křesťané"]},{"type":"literární žánr","answers":["novela"],"clues":["dostavník, válka, psychický teror"]},{"type":"literární žánr","answers":["komedie"],"clues":["zákaz vstupu žen na hrad"]},{"type":"literární žánr","answers":["drama"],"clues":["jed v kávě"]},{"type":"literární žánr","answers":["drama"],"clues":["moravská vesnice, utajované dítě"]},{"type":"žánrovou variantu","answers":["romaneto"],"clues":["tajemná malba, poklad, posedlost"]},{"type":"žánrovou variantu","answers":["romaneto"],"clues":["cesta časem, vědecký objev"]},{"type":"žánrovou variantu","answers":["experimentální román","naturalistický román"],"clues":["dědičnost, alkoholismus, prostředí dělníků"]},{"type":"žánrovou variantu","answers":["psychologický román"],"clues":["nespokojenost s manželstvím, dluhy"]},{"type":"žánrovou variantu","answers":["historický román"],"clues":["Chodsko, odpor proti vrchnosti"]},{"type":"žánrovou variantu","answers":["historický román"],"clues":["národní obrození, knihkupec"]},{"type":"žánrovou variantu","answers":["sociální román"],"clues":["sociální problémy dělníků a chudiny"]}]},{"key":"smery","title":"VI. SMĚR / SKUPINA / OBDOBÍ","prompt":"Doplň literární směr, skupinu nebo období","items":[{"answers":["májovci"],"clues":["literární skupina kolem almanachu Máj"]},{"answers":["májovci"],"clues":["Neruda, Hálek, Světlá, Arbes"]},{"answers":["májovci"],"clues":["důraz na současnost, sociální otázky a světovost"]},{"answers":["májovci"],"clues":["skupina prosazující se na konci 50. let v období zanikajícího Bachova neoabsolutismu"]},{"answers":["májovci"],"clues":["navazují na odkaz Karla Hynka Máchy"]},{"answers":["ruchovci"],"clues":["skupina vznikající u příležitosti našeho nejslavnějšího divadla"]},{"answers":["ruchovci"],"clues":["vlastenectví, národní témata, slovanská vzájemnost"]},{"answers":["ruchovci"],"clues":["Svatopluk Čech, Eliška Krásnohorská"]},{"answers":["lumírovci"],"clues":["kosmopolitní zaměření a překlady světové literatury"]},{"answers":["lumírovci"],"clues":["Vrchlický, Sládek, Zeyer"]},{"answers":["lumírovci"],"clues":["skupina zaměřující se na překlady z románských jazyků"]},{"answers":["lumírovci"],"clues":["skupina zdůrazňující místo obsahu literárního díla jeho formu"]},{"answers":["lumírovci"],"clues":["snaha povznést českou literaturu na světovou úroveň"]},{"answers":["realismus"],"clues":["snaha věrně zobrazit skutečnost"]},{"answers":["realismus"],"clues":["typizace postav a prostředí"]},{"answers":["realismus"],"clues":["kritika společnosti, všední život, objektivnější vypravování"]},{"answers":["realismus"],"clues":["směr typický hlavně pro druhou polovinu 19. století"]},{"answers":["kritický realismus"],"clues":["realismus zaměřený na odhalování společenských nedostatků"]},{"answers":["naturalismus"],"clues":["důraz na dědičnost, prostředí a biologické pudy"]},{"answers":["naturalismus"],"clues":["drsné zachycení života, sociální bída, alkoholismus"]},{"answers":["naturalismus"],"clues":["Émile Zola jako hlavní představitel"]},{"answers":["realismus"],"clues":["Rais, Jirásek, Stroupežnický, Preissová, Mrštíkové"]},{"answers":["realismus"],"clues":["Dickens, Flaubert, Zola, Gogol, Dostojevskij"]},{"answers":["realismus"],"clues":["venkov, historie, sociální problémy, realistické drama"]},{"answers":["světová moderna","moderna"],"clues":["konec 19. století, odklon od realismu"]},{"answers":["světová moderna","moderna"],"clues":["důraz na subjektivitu, náladu, výjimečnost jedince a uměleckou originalitu"]},{"answers":["světová moderna","moderna"],"clues":["Baudelaire, Verlaine, Rimbaud, Wilde"]},{"answers":["impresionismus"],"clues":["zachycení okamžité nálady, dojmu a prchavého vjemu"]},{"answers":["symbolismus"],"clues":["vyjadřování pomocí náznaků, obrazů a skrytých významů"]},{"answers":["dekadence"],"clues":["pocit úpadku, vyčerpanosti, provokace a krása v ošklivosti"]},{"answers":["prokletí básníci"],"clues":["Verlaine, Rimbaud, Baudelaire; bohémský způsob života; konflikt se společností"]},{"answers":["prokletí básníci"],"clues":["francouzští básníci druhé poloviny 19. století; alkohol, skandály, vydělenost ze společnosti"]}]}];
+const TEST_PLAN = {dila:3, autori:3, postavy:3, pojmy:2, forma:3, smery:2};
+const TEST_TIME = 25, CHALLENGE_TIME = 25, MINI_TIME = 25, MINI_COUNT = 10;
+let state = {screen:'home', mode:null, section:null, questions:[], index:0, current:null, score:0, wrong:0, streak:0, timer:null, timeLeft:0, locked:false, name:'', clazz:'', cheated:false, startTime:null, finishSent:false,awaitNext:false};
+const app = document.getElementById('app');
+let audioCtx = null;
+function norm(s){
+  return (s||'').toString().trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[.,;:!?()„“"'`´]/g,' ')
+    .replace(/\s+/g,' ');
+}
+function editDistanceOneOrLess(a,b){
+  a=norm(a); b=norm(b);
+  if(a===b)return true;
+  if(Math.abs(a.length-b.length)>1)return false;
+  let i=0,j=0,diff=0;
+  while(i<a.length && j<b.length){
+    if(a[i]===b[j]){i++;j++;continue;}
+    diff++;
+    if(diff>1)return false;
+    if(a.length===b.length){i++;j++;}
+    else if(a.length>b.length){i++;}
+    else{j++;}
+  }
+  if(i<a.length || j<b.length)diff++;
+  return diff<=1;
+}
+function okAnswer(input,item){
+  return item.answers.some(a=>editDistanceOneOrLess(input,a));
+}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function pick(arr,n){return shuffle(arr).slice(0,Math.min(n,arr.length))}
+function allItems(){return DATA.flatMap(sec=>sec.items.map(it=>({...it, section:sec})))}
+function secByKey(k){return DATA.find(s=>s.key===k)}
+function activeProtected(){return ['challenge','test','mini'].includes(state.mode) && state.screen==='question' && !state.finishSent;}
+function unlockAudio(){try{audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume();}catch(e){}}
+function onTap(el,fn){el.addEventListener('click',e=>{unlockAudio(); e.preventDefault(); fn(e);},{passive:false})}
+function setModeClass(mode){document.body.className = mode ? 'mode-'+mode : '';}
+function render(html, mode=state.mode){setModeClass(mode); app.innerHTML=html; document.querySelectorAll('[data-action]').forEach(b=>onTap(b,()=>actions[b.dataset.action](b.dataset)));}
+function esc(s){return (s||'').toString().replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function home(){clearTimer(); state={...state,screen:'home',mode:null,section:null,questions:[],index:0,score:0,wrong:0,streak:0,cheated:false,finishSent:false}; render(`<div class="card"><h1 class="title">Literární aréna II/2</h1>
+
+<button class="secondary results-btn" type="button" onclick="window.open(RESULTS_SHEET_URL, '_blank')">📊 Výsledková tabulka</button>
+<p class="subtitle">2. polovina 19. století: realismus, májovci, ruchovci, lumírovci, český realismus a světová moderna</p><div class="grid"><button class="btn trainingBtn" data-action="trainingMenu">TRÉNINK</button><button class="btn challengeBtn" data-action="nameChallenge">VÝZVA</button><button class="btn testBtn" data-action="nameTest">TEST</button></div><p class="small" style="text-align:center;margin-top:14px">Databáze: ${DATA.reduce((s,x)=>s+x.items.length,0)} položek v 6 oddílech.</p></div>`, null)}
+function trainingMenu(){clearTimer();let buttons=DATA.map(s=>`<div class="trainCard"><button class="btn trainingBtn" data-action="startTraining" data-key="${s.key}">${s.title}<br><span class="small">procvičování bez známky · ${s.items.length} položek</span></button><button class="btn miniBtn" data-action="nameMini" data-key="${s.key}">TESTÍK<br><span class="small">10 otázek z oddílu</span></button></div>`).join('');render(`<div class="card training"><h1 class="title">Menu tréninku</h1><p class="subtitle">Vlevo je volné procvičování, vpravo krátký testík z vybraného oddílu.</p><div class="sectionList">${buttons}</div><div class="row" style="margin-top:14px"><button class="btn ghost" data-action="home">HLAVNÍ MENU</button></div></div>`,'training')}
+function nameScreen(mode, key=null){let title=mode==='challenge'?'Výzva':mode==='mini'?'Testík':'Test';let sec=key?secByKey(key):null;render(`<div class="card ${mode}"><h1 class="title">${title}</h1>${sec?`<p class="subtitle">${sec.title} · krátký oddílový testík</p>`:''}<div class="nameBox"><input class="input" id="name" placeholder="Jméno žáka"><input class="input" id="clazz" placeholder="Třída"><button class="btn" id="startBtn">ZAČÍT</button><button class="btn ghost" data-action="home">HLAVNÍ MENU</button></div></div>`, mode);onTap(document.getElementById('startBtn'),()=>{state.name=document.getElementById('name').value.trim();state.clazz=document.getElementById('clazz').value.trim(); if(mode==='challenge')startChallenge(); else if(mode==='mini')startMini(key); else startTest();})}
+function startTraining(key){let sec=secByKey(key);state={...state,screen:'question',mode:'training',section:sec,questions:shuffle(sec.items.map(it=>({...it,section:sec}))),index:0,score:0,wrong:0,locked:false,awaitNext:false,startTime:Date.now(),finishSent:false};nextQuestion();}
+function startMini(key){let sec=secByKey(key);state={...state,screen:'question',mode:'mini',section:sec,questions:pick(sec.items.map(it=>({...it,section:sec})),MINI_COUNT),index:0,score:0,wrong:0,locked:false,awaitNext:false,startTime:Date.now(),cheated:false,finishSent:false};nextQuestion();}
+function startChallenge(){state={...state,screen:'question',mode:'challenge',section:null,questions:shuffle(allItems()),index:0,score:0,wrong:0,streak:0,locked:false,awaitNext:false,startTime:Date.now(),cheated:false,finishSent:false};nextQuestion();}
+function startTest(){let qs=[];DATA.forEach(sec=>{qs.push(...pick(sec.items.map(it=>({...it,section:sec})),TEST_PLAN[sec.key]||2));});state={...state,screen:'question',mode:'test',section:null,questions:shuffle(qs),index:0,score:0,wrong:0,locked:false,awaitNext:false,startTime:Date.now(),cheated:false,finishSent:false};nextQuestion();}
+function nextQuestion(){clearTimer();state.locked=false;state.awaitNext=false;if(state.mode==='challenge' && state.streak>=10){return finish('challengeWin')}if(state.index>=state.questions.length){return finish(state.mode)}state.current=state.questions[state.index];state.screen='question';renderQuestion();if(state.mode==='challenge')startTimer(CHALLENGE_TIME);if(state.mode==='test')startTimer(TEST_TIME);if(state.mode==='mini')startTimer(MINI_TIME);}
+
+function shortSectionTitle(title){
+  const t = (title || '').toUpperCase();
+  if (t.includes('DÍLO')) return 'DÍLA';
+  if (t.includes('AUTOŘI')) return 'AUTOŘI';
+  if (t.includes('POSTAVY')) return 'POSTAVY';
+  if (t.includes('POJMY')) return 'POJMY';
+  if (t.includes('FORMA') || t.includes('ŽÁNR') || t.includes('DRUH')) return 'FORMA\nDRUH\nŽÁNR';
+  if (t.includes('SMĚR') || t.includes('SKUPINA') || t.includes('OBDOBÍ')) return 'SMĚR\nSKUPINA\nOBDOBÍ';
+  return t.replace(/^[IVX]+\.\s*/, '').slice(0, 10);
+}
+function statusLine(){
+  if(state.mode==='training'){
+    return `<span>SPRÁVNĚ ${state.score}</span><span class="dot">•</span><span class="score">CHYBY ${state.wrong}</span>`;
+  }
+  if(state.mode==='challenge'){
+    return `<span>SÉRIE ${state.streak}/10</span>`;
+  }
+  return `<span>OTÁZKA ${state.index+1}/${state.questions.length}</span><span class="dot">•</span><span class="score">BODY ${state.score}</span>`;
+}
+
+function modeLabel(){return state.mode==='training'?'TRÉNINK':state.mode==='challenge'?'VÝZVA':state.mode==='mini'?'TESTÍK':'TEST'}
+function renderQuestion(){
+  let it=state.current, sec=it.section;
+  let modeCls=state.mode;
+  let timeText = state.mode==='training' ? '∞' : (state.timeLeft || '');
+  let clues=it.clues.map(c=>`<div class="clue">${esc(c)}</div>`).join('');
+  render(`<div class="card ${modeCls}">
+    <div class="topbar">
+      <div class="modeSeal ${state.mode}">${modeLabel()}</div>
+      <div class="timeCenter"><span id="time">${timeText}</span><span class="statusMini">${statusLine()}</span></div>
+      <div class="sectionSeal">${shortSectionTitle(sec.title)}</div>
+    </div>
+    <div class="promptType">${it.type ? "Doplň " + it.type : sec.prompt}</div>
+    <div class="clueBox"><div class="clues">${clues}</div></div>
+    <div class="answerRow">
+      <input class="input" id="answer" autocomplete="off" autocapitalize="none" placeholder="Napiš odpověď...">
+      <button class="btn" id="submitBtn">✓</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="row">
+      <button class="btn ghost" data-action="trainingMenu">MENU TRÉNINKU</button>
+      <button class="btn ghost" data-action="home">HLAVNÍ MENU</button>
+    </div>
+  </div>`, state.mode);
+  let inp=document.getElementById('answer');
+  let btn=document.getElementById('submitBtn');
+  enableKeyboardLayout();
+  onTap(btn,submitAnswer);
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitAnswer();}});
+  setTimeout(()=>{try{inp.focus({preventScroll:true})}catch(e){inp.focus()}},80);
+}
+
+function enableKeyboardLayout(){
+  const answer = document.getElementById('answer');
+  if(!answer) return;
+  const setOpen = (open) => {
+    document.body.classList.toggle('keyboardOpen', !!open);
+    if(open){
+      setTimeout(()=>{
+        try{
+          document.querySelector('.answerRow')?.scrollIntoView({block:'nearest', behavior:'smooth'});
+        }catch(e){}
+      }, 180);
+    }
+  };
+  answer.addEventListener('focus', () => setOpen(true));
+  answer.addEventListener('blur', () => setTimeout(()=>setOpen(false), 180));
+}
+
+function submitAnswer(){
+  if(state.locked && state.awaitNext){
+    nextQuestion();
+    return;
+  }
+  if(state.locked)return;
+  let val=document.getElementById('answer')?.value||'';
+  if(!val.trim())return;
+  state.locked=true;
+  state.awaitNext=false;
+  clearTimer();
+  let good=okAnswer(val,state.current);
+  let fb=document.getElementById('feedback');
+  let submitBtn=document.getElementById('submitBtn');
+
+  if(good){
+    state.score++;
+    state.streak++;
+    fb.innerHTML='<span class="ok">SPRÁVNĚ!</span>';
+    soundCorrect();
+    state.index++;
+    setTimeout(nextQuestion,600);
+  }else{
+    state.wrong++;
+    state.streak=0;
+    let ans=state.current.answers[0];
+    const card=document.querySelector('.card');
+    if(card)card.classList.add('mistakeMode');
+    fb.innerHTML=`<span class="bad">CHYBA</span><br><span class="small">Správně:</span><br><span class="correctAnswer">${esc(ans)}</span>`;
+    if(submitBtn)submitBtn.textContent='DALŠÍ OTÁZKA';
+    soundWrong();
+    state.index++;
+    state.awaitNext=true;
+  }
+}
+function startTimer(sec){state.timeLeft=sec;updateTime();state.timer=setInterval(()=>{state.timeLeft--;updateTime();if(state.timeLeft<=0){clearTimer();timeoutAnswer();}},1000)}
+function updateTime(){let el=document.getElementById('time');if(el)el.textContent=state.timeLeft;}
+function clearTimer(){if(state.timer){clearInterval(state.timer);state.timer=null}}
+function timeoutAnswer(){
+  if(state.locked)return;
+  state.locked=true;
+  state.awaitNext=true;
+  state.wrong++;
+  state.streak=0;
+  let fb=document.getElementById('feedback');
+  let submitBtn=document.getElementById('submitBtn');
+  const card=document.querySelector('.card');
+  if(card)card.classList.add('mistakeMode');
+  if(fb)fb.innerHTML=`<span class="bad">ČAS VYPRŠEL</span><br><span class="small">Správně:</span><br><span class="correctAnswer">${esc(state.current.answers[0])}</span>`;
+  if(submitBtn)submitBtn.textContent='DALŠÍ OTÁZKA';
+  soundWrong();
+  state.index++;
+}
+function grade(score,total){let p=score/total;if(p>=0.88)return 1;if(p>=0.75)return 2;if(p>=0.56)return 3;if(p>=0.38)return 4;return 5;}
+function finish(kind){clearTimer();state.screen='finish';let total=kind==='challengeWin'?10:state.questions.length;let znamka = kind==='challengeWin'?1:grade(state.score,total);if(state.cheated)znamka=6;let title=kind==='challengeWin'?'MÁŠ JEDNIČKU!':'VÝSLEDEK';if(znamka===1)confetti();sendResult(znamka,total,kind);render(`<div class="card ${state.mode}"><h1 class="title">${title}</h1><div class="result"><b>Jméno:</b> ${esc(state.name||'—')}<br><b>Třída:</b> ${esc(state.clazz||'—')}<br><b>Režim:</b> ${modeLabel()}<br><b>Body:</b> ${state.score}/${total}<br><b>Známka:</b> ${znamka}</div><div class="row" style="margin-top:18px"><button class="btn" data-action="home">HLAVNÍ MENU</button><button class="btn secondary" data-action="trainingMenu">TRÉNINK</button><button class="btn ghost" type="button" onclick="window.open(RESULTS_SHEET_URL, '_blank')">📊 VÝSLEDKOVÁ TABULKA</button></div><p class="small" style="text-align:center">Výsledek se odesílá do tabulky.</p></div>`, state.mode)}
+function cheatFinish(reason){if(!activeProtected())return;state.cheated=true;state.locked=true;state.screen='finish';clearTimer();soundCheat();let total=state.questions.length||0;sendResult(6,total,'PODVOD: '+reason,true);render(`<div class="card cheat"><h1 class="title">PODVOD</h1><div class="result"><b>Pokus byl ukončen.</b><br>Bylo zjištěno opuštění testovacího okna.<br><br><b>Známka:</b> 6</div><div class="row" style="margin-top:18px"><button class="btn" data-action="home">HLAVNÍ MENU</button><button class="btn ghost" type="button" onclick="window.open(RESULTS_SHEET_URL, '_blank')">📊 VÝSLEDKOVÁ TABULKA</button></div></div>`, 'test')}
+function buildPayload(znamka,total,kind){return {timestamp:new Date().toISOString(),jmeno:state.name,trida:state.clazz,rezim:state.mode,oddil:state.section?state.section.title:'mix',znamka,body:state.score,celkem:total,spravne:state.score,spatne:state.wrong,poznamka:state.cheated?'PODVOD':kind,sheetId:SHEET_ID,app:'Literární aréna II/2'}}
+function sendResult(znamka,total,kind,urgent=false){
+  if(state.finishSent && !urgent)return;
+  state.finishSent=true;
+  const payload=buildPayload(znamka,total,kind);
+  payload.odeslano = "ano";
+  localStorage.setItem('literarniArenaII2_lastResult',JSON.stringify(payload));
+
+  try{
+    if(!GAS_WEB_APP_URL) throw new Error("Chybí GAS_WEB_APP_URL");
+    const params = new URLSearchParams();
+    Object.entries(payload).forEach(([k,v]) => params.append(k, v == null ? "" : String(v)));
+    const body = params.toString();
+
+    if(urgent && navigator.sendBeacon){
+      const blob = new Blob([body], {type:'application/x-www-form-urlencoded;charset=UTF-8'});
+      navigator.sendBeacon(GAS_WEB_APP_URL, blob);
+    }else{
+      fetch(GAS_WEB_APP_URL,{
+        method:'POST',
+        mode:'no-cors',
+        headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+        body,
+        keepalive:true
+      }).catch(err=>{
+        localStorage.setItem('literarniArenaII2_pendingResult',JSON.stringify(payload));
+      });
+    }
+  }catch(e){
+    localStorage.setItem('literarniArenaII2_pendingResult',JSON.stringify(payload));
+  }
+}
+function tone(freq,dur,gain=.08,type='sine',delay=0){try{unlockAudio();if(!audioCtx)return;let t=audioCtx.currentTime+delay;let o=audioCtx.createOscillator();let g=audioCtx.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(gain,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+dur+0.03);}catch(e){}}
+function soundCorrect(){tone(720,.08,.06,'sine');tone(980,.10,.05,'sine',.07)}
+function soundWrong(){tone(150,.20,.22,'square');tone(110,.23,.20,'sawtooth',.17);tone(80,.22,.18,'square',.34)}
+function soundCheat(){tone(95,.65,.28,'sawtooth');tone(70,.65,.24,'square',.35);tone(95,.65,.28,'sawtooth',.72)}
+function confetti(){let box=document.getElementById('confetti');for(let i=0;i<90;i++){let p=document.createElement('div');p.className='piece';p.style.left=Math.random()*100+'vw';p.style.top='-20px';p.style.animationDelay=Math.random()*0.8+'s';p.style.background=['#ffd36a','#ff6b6b','#74f0a0','#9fd4ff'][i%4];box.appendChild(p);setTimeout(()=>p.remove(),2700)}}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)cheatFinish('přepnutí mimo stránku');});
+window.addEventListener('pagehide',()=>{cheatFinish('opuštění stránky');});
+window.addEventListener('blur',()=>{setTimeout(()=>{if(activeProtected() && document.visibilityState==='visible' && !document.hasFocus()) cheatFinish('ztráta aktivního okna');},650);});
+const actions={home,trainingMenu,nameChallenge:()=>nameScreen('challenge'),nameTest:()=>nameScreen('test'),nameMini:(d)=>nameScreen('mini',d.key),startTraining:(d)=>startTraining(d.key)};
+home();
+</script>
+</body>
+</html>
